@@ -1,5 +1,5 @@
 import Author from '../models/author'; // Adjust the import to your Author model path
-import { getAuthorList } from '../pages/authors'; // Adjust the import to your function
+import { getAuthorList, showAllAuthors } from '../pages/authors'; // Adjust the import to your function
 
 describe('getAuthorList', () => {
     afterEach(() => {
@@ -111,5 +111,46 @@ describe('getAuthorList', () => {
 
         // Assert: Verify the result is an empty array
         expect(result).toEqual([]);
+    });
+});
+
+
+describe('showAllAuthors', () => {
+    afterEach(() => {
+        jest.resetAllMocks();
+    });
+
+    it('should send the author list if data is available', async () => {
+        const mockSend = jest.fn();
+        const mockRes = { send: mockSend };
+
+        const mockData = ['Austen, Jane : 1775 - 1817', 'Ghosh, Amitav : 1835 - 1910'];
+        jest.spyOn(require('../pages/authors'), 'getAuthorList').mockResolvedValue(mockData);
+
+        await showAllAuthors(mockRes as any);
+
+        expect(mockSend).toHaveBeenCalledWith(mockData);
+    });
+
+    it('should send a message if no authors are found', async () => {
+        const mockSend = jest.fn();
+        const mockRes = { send: mockSend };
+
+        jest.spyOn(require('../pages/authors'), 'getAuthorList').mockResolvedValue([]);
+
+        await showAllAuthors(mockRes as any);
+
+        expect(mockSend).toHaveBeenCalledWith('No authors found');
+    });
+
+    it('should send a message if an error occurs', async () => {
+        const mockSend = jest.fn();
+        const mockRes = { send: mockSend };
+
+        jest.spyOn(require('../pages/authors'), 'getAuthorList').mockRejectedValue(new Error('Database error'));
+
+        await showAllAuthors(mockRes as any);
+
+        expect(mockSend).toHaveBeenCalledWith('No authors found');
     });
 });
