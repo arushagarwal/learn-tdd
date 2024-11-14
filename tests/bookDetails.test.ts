@@ -99,4 +99,19 @@ describe('showBookDtls', () => {
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.send).toHaveBeenCalledWith('Error fetching book 12345');
     });
+
+    it('should return 404 if the book is not found (null id)', async () => {
+        const id = null; // Pass `null` as the id
+    
+        // Mock `getBook` to return `null` when id is invalid
+        const mockGetBook = jest.fn().mockResolvedValue(null);
+        Book.findOne = mockGetBook;
+    
+        // Act
+        await showBookDtls(res as Response, id as unknown as string);
+    
+        // Assert
+        expect(res.status).toHaveBeenCalledWith(404);
+        expect(res.send).toHaveBeenCalledWith(`Book ${id} not found`);
+    });
 });
