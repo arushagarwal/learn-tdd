@@ -76,6 +76,19 @@ describe('getAuthorList', () => {
             }
         ];
 
+        it('should return an empty array when an error occurs', async () => {
+            // Arrange: Mock the Author.find() method to throw an error
+            Author.find = jest.fn().mockImplementation(() => {
+                throw new Error('Database error');
+            });
+    
+            // Act: Call the function to get the authors list
+            const result = await getAuthorList();
+    
+            // Assert: Verify the result is an empty array
+            expect(result).toEqual([]);
+        });
+
         // Mock the find method to chain with sort
         const mockFind = jest.fn().mockReturnValue({
             sort: jest.fn().mockResolvedValue(sortedAuthors)
@@ -99,19 +112,6 @@ describe('getAuthorList', () => {
         expect(mockFind().sort).toHaveBeenCalledWith([['family_name', 'ascending']]);
 
     });
-
-    it('should return an empty array when an error occurs', async () => {
-        // Arrange: Mock the Author.find() method to throw an error
-        Author.find = jest.fn().mockImplementation(() => {
-            throw new Error('Database error');
-        });
-
-        // Act: Call the function to get the authors list
-        const result = await getAuthorList();
-
-        // Assert: Verify the result is an empty array
-        expect(result).toEqual([]);
-    });
 });
 
 
@@ -132,22 +132,22 @@ describe('showAllAuthors', () => {
         expect(mockSend).toHaveBeenCalledWith(mockData);
     });
 
-    it('should send a message if no authors are found', async () => {
+    it('should send a message if an error occurs', async () => {
         const mockSend = jest.fn();
         const mockRes = { send: mockSend };
 
-        jest.spyOn(require('../pages/authors'), 'getAuthorList').mockResolvedValue([]);
+        jest.spyOn(require('../pages/authors'), 'getAuthorList').mockRejectedValue(new Error('Database error'));
 
         await showAllAuthors(mockRes as any);
 
         expect(mockSend).toHaveBeenCalledWith('No authors found');
     });
 
-    it('should send a message if an error occurs', async () => {
+    it('should send a message if no authors are found', async () => {
         const mockSend = jest.fn();
         const mockRes = { send: mockSend };
 
-        jest.spyOn(require('../pages/authors'), 'getAuthorList').mockRejectedValue(new Error('Database error'));
+        jest.spyOn(require('../pages/authors'), 'getAuthorList').mockResolvedValue([]);
 
         await showAllAuthors(mockRes as any);
 

@@ -86,20 +86,6 @@ describe('showBookDtls', () => {
         expect(res.send).toHaveBeenCalledWith('Error fetching book 12345');
     });
 
-    it('should return 500 if there is an error fetching book instance', async () => {
-        // Mocking the Book model's findOne method to throw an error
-        BookInstance.find = jest.fn().mockImplementation(() => {
-            throw new Error('Database error');
-        });
-
-        // Act
-        await showBookDtls(res as Response, '12345');
-
-        // Assert
-        expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.send).toHaveBeenCalledWith('Error fetching book 12345');
-    });
-
     it('should return 404 if the book is not found (null id)', async () => {
         const id = null; // Pass `null` as the id
     
@@ -113,5 +99,19 @@ describe('showBookDtls', () => {
         // Assert
         expect(res.status).toHaveBeenCalledWith(404);
         expect(res.send).toHaveBeenCalledWith(`Book ${id} not found`);
+    });    
+
+    it('should return 500 if there is an error fetching book instance', async () => {
+        // Mocking the Book model's findOne method to throw an error
+        BookInstance.find = jest.fn().mockImplementation(() => {
+            throw new Error('Database error');
+        });
+
+        // Act
+        await showBookDtls(res as Response, '12345');
+
+        // Assert
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.send).toHaveBeenCalledWith('Error fetching book 12345');
     });
 });
