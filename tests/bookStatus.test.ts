@@ -3,11 +3,10 @@ import BookInstance from "../models/bookinstance";
 import { showAllBooksStatus } from "../pages/books_status";
 
 describe("showAllBooksStatus", () => {
-    // Arrange: Prepare mock data and response object
     let res: Partial<Response>;
     const mockBookInstances = [
-        { book: { title: "Mock Book Title" }, status: "Available" },
-        { book: { title: "Mock Book Title 2" }, status: "Available" },
+        { book: { title: "Book Title 1" }, status: "Available" },
+        { book: { title: "Book Title 2" }, status: "Unavailable" },
     ];
     beforeEach(() => {
         res = {
@@ -20,53 +19,60 @@ describe("showAllBooksStatus", () => {
         jest.clearAllMocks();
     });
 
-    it("should return all books with status 'Available'", async () => {
-        // Arrange: Mock the BookInstance model's find and populate methods
+    it("should return a list of books with status 'Available'", async () => {
         const mockFind = jest.fn().mockReturnValue({
             populate: jest.fn().mockResolvedValue(mockBookInstances)
         });
         BookInstance.find = mockFind;
 
-        // Act: Call the function to show all books with status 'Available'
+
         await showAllBooksStatus(res as Response);
 
-        // Assert: Check if the response is as expected
         expect(mockFind).toHaveBeenCalledWith({ status: { $eq: "Available" } });
         expect(BookInstance.find().populate).toHaveBeenCalledWith('book');
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.send).toHaveBeenCalledWith([
-            "Mock Book Title : Available",
-            "Mock Book Title 2 : Available",
+            "Book Title 1: Available"
         ]);
     });
 
-    it("should return 500 status and error message if an error occurs", async () => {
-        // Arrange: Mock the BookInstance model's find method to throw an error
+    it("should return a list of books with status 'Unavailable'", async () => {        
         const mockFind = jest.fn().mockReturnValue({
-            populate: jest.fn().mockRejectedValue(new Error("Database error"))
+            populate: jest.fn().mockResolvedValue(mockBookInstances)
+        });
+        BookInstance.find = mockFind;
+        
+        await showAllBooksStatus(res as Response);
+
+        expect(mockFind).toHaveBeenCalledWith({ status: { $eq: "Unavailable" } });
+        expect(BookInstance.find().populate).toHaveBeenCalledWith('book');
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.send).toHaveBeenCalledWith([
+            "Book Title 2: Unavailable"
+        ]);
+    });
+
+    it("should return a 500 status and error message when a database error occurs", async () => {
+        const mockFind = jest.fn().mockReturnValue({
+            populate: jest.fn().mockRejectedValue(new Error("Database error found"))
         });
         BookInstance.find = mockFind;
 
-        // Act: Call the function to show all books with status 'Available'
         await showAllBooksStatus(res as Response);
 
-        // Assert: Check if the response is as expected for an error
         expect(mockFind).toHaveBeenCalledWith({ status: { $eq: "Available" } });
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.send).toHaveBeenCalledWith("Status not found");
     });
 
-    it("should return empty list if no books are available", async () => {
-        // Arrange: Mock the BookInstance model's find and populate methods
+    it("should return an empty list when no books with status 'Available' exist", async () => {
         const mockFind = jest.fn().mockReturnValue({
             populate: jest.fn().mockResolvedValue([])
         });
         BookInstance.find = mockFind;
 
-        // Act: Call the function to show all books with status 'Available'
         await showAllBooksStatus(res as Response);
 
-        // Assert: Check if the response is as expected
         expect(mockFind).toHaveBeenCalledWith({ status: { $eq: "Available" } });
         expect(BookInstance.find().populate).toHaveBeenCalledWith('book');
         expect(res.status).toHaveBeenCalledWith(200);
