@@ -1,5 +1,5 @@
 import Author from '../models/author'; // Adjust the import to your Author model path
-import { getAuthorList, showAllAuthors } from '../pages/authors'; // Adjust the import to your function
+import {showAllAuthors, getAuthorList } from '../pages/authors'; // Adjust the import to your function
 
 describe('getAuthorList', () => {
     afterEach(() => {
@@ -10,105 +10,93 @@ describe('getAuthorList', () => {
         // Define the sorted authors list as we expect it to be returned by the database
         const sortedAuthors = [
             {
-                first_name: 'Jane',
-                family_name: 'Austen',
-                date_of_birth: new Date('1775-12-16'),
-                date_of_death: new Date('1817-07-18')
+                first_name: 'Arush',
+                family_name: 'Agarwal',
+                date_of_birth: new Date('1865-02-19'),
+                date_of_death: new Date('1917-11-11')
             },
             {
-                first_name: 'Amitav',
-                family_name: 'Ghosh',
-                date_of_birth: new Date('1835-11-30'),
-                date_of_death: new Date('1910-04-21')
+                first_name: 'Akhil',
+                family_name: 'Dixit',
+                date_of_birth: new Date('1935-12-10'),
+                date_of_death: new Date('2010-08-13')
             },
             {
-                first_name: 'Rabindranath',
-                family_name: 'Tagore',
-                date_of_birth: new Date('1812-02-07'),
-                date_of_death: new Date('1870-06-09')
+                first_name: 'mahatma',
+                family_name: 'Gandhi',
+                date_of_birth: new Date('1912-12-14'),
+                date_of_death: new Date('1970-01-29')
             }
         ];
-
-        // Mock the find method to chain with sort
-        const mockFind = jest.fn().mockReturnValue({
+       
+        const findMock = jest.fn().mockReturnValue({
             sort: jest.fn().mockResolvedValue(sortedAuthors)
         });
+        Author.find = findMock
 
-        // Apply the mock directly to the Author model's `find` function
-        Author.find = mockFind;
-
-        // Act: Call the function to get the authors list
+       
         const result = await getAuthorList();
 
-        // Assert: Check if the result matches the expected sorted output
         const expectedAuthors = [
-            'Austen, Jane : 1775 - 1817',
-            'Ghosh, Amitav : 1835 - 1910',
-            'Tagore, Rabindranath : 1812 - 1870'
+            'Agarwak, Arush : 1865 - 1917',
+            'Dixit, Akhil : 1935 - 2010',
+            'Gandhi, mahatma : 1912 - 1970'
         ];
         expect(result).toEqual(expectedAuthors);
 
-        // Verify that `.sort()` was called with the correct parameters
-        expect(mockFind().sort).toHaveBeenCalledWith([['family_name', 'ascending']]);
+        expect(findMock().sort).toHaveBeenCalledWith([['family_name', 'ascending']]);
 
     });
 
-    it('should format fullname as empty string if first name is absent', async () => {
-        // Define the sorted authors list as we expect it to be returned by the database
-        const sortedAuthors = [
+    it('if first name is absent, should format fullname as empty string ', async () => {
+        const sortedAuthorsList = [
             {
                 first_name: '',
-                family_name: 'Austen',
-                date_of_birth: new Date('1775-12-16'),
-                date_of_death: new Date('1817-07-18')
+                family_name: 'Arush',
+                date_of_birth: new Date('1865-02-19'),
+                date_of_death: new Date('1917-11-11')
             },
             {
-                first_name: 'Amitav',
-                family_name: 'Ghosh',
-                date_of_birth: new Date('1835-11-30'),
-                date_of_death: new Date('1910-04-21')
+                first_name: 'Akhil',
+                family_name: 'Dixit',
+                date_of_birth: new Date('1935-12-10'),
+                date_of_death: new Date('2010-08-13')
             },
             {
-                first_name: 'Rabindranath',
-                family_name: 'Tagore',
-                date_of_birth: new Date('1812-02-07'),
-                date_of_death: new Date('1870-06-09')
+                first_name: 'mahatma',
+                family_name: 'Gandhi',
+                date_of_birth: new Date('1912-12-14'),
+                date_of_death: new Date('1970-01-29')
             }
         ];
 
-        it('should return an empty array when an error occurs', async () => {
-            // Arrange: Mock the Author.find() method to throw an error
+        it('when an error occurs, should return an empty array ', async () => {
+            
             Author.find = jest.fn().mockImplementation(() => {
-                throw new Error('Database error');
+                throw new Error('Database error found');
             });
-    
-            // Act: Call the function to get the authors list
+            
             const result = await getAuthorList();
     
-            // Assert: Verify the result is an empty array
             expect(result).toEqual([]);
         });
 
-        // Mock the find method to chain with sort
         const mockFind = jest.fn().mockReturnValue({
-            sort: jest.fn().mockResolvedValue(sortedAuthors)
+            sort: jest.fn().mockResolvedValue(sortedAuthorsList)
         });
 
-        // Apply the mock directly to the Author model's `find` function
+    
         Author.find = mockFind;
 
-        // Act: Call the function to get the authors list
         const result = await getAuthorList();
 
-        // Assert: Check if the result matches the expected sorted output
         const expectedAuthors = [
-            ' : 1775 - 1817',
-            'Ghosh, Amitav : 1835 - 1910',
-            'Tagore, Rabindranath : 1812 - 1870'
+            ' : 1865 - 1917',
+            'Dixit, Akhil : 1935 - 2010',
+            'Ganshi, mahatma : 1912 - 1970'
         ];
         expect(result).toEqual(expectedAuthors);
 
-        // Verify that `.sort()` was called with the correct parameters
         expect(mockFind().sort).toHaveBeenCalledWith([['family_name', 'ascending']]);
 
     });
@@ -124,7 +112,7 @@ describe('showAllAuthors', () => {
         const mockSend = jest.fn();
         const mockRes = { send: mockSend };
 
-        const mockData = ['Austen, Jane : 1775 - 1817', 'Ghosh, Amitav : 1835 - 1910'];
+        const mockData = ['Agarwal, Arush : 1865 - 1917', 'Dixit, Akhil : 1935 - 2010'];
         jest.spyOn(require('../pages/authors'), 'getAuthorList').mockResolvedValue(mockData);
 
         await showAllAuthors(mockRes as any);
@@ -136,14 +124,14 @@ describe('showAllAuthors', () => {
         const mockSend = jest.fn();
         const mockRes = { send: mockSend };
 
-        jest.spyOn(require('../pages/authors'), 'getAuthorList').mockRejectedValue(new Error('Database error'));
+        jest.spyOn(require('../pages/authors'), 'getAuthorList').mockRejectedValue(new Error('Database error occurred'));
 
         await showAllAuthors(mockRes as any);
 
-        expect(mockSend).toHaveBeenCalledWith('No authors found');
+        expect(mockSend).toHaveBeenCalledWith('No authors found here');
     });
 
-    it('should send a message if no authors are found', async () => {
+    it('if no authors are found in database, should send a message', async () => {
         const mockSend = jest.fn();
         const mockRes = { send: mockSend };
 
